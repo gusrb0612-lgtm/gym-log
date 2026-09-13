@@ -1,6 +1,6 @@
 // 앱 껍데기를 캐시해서 오프라인(헬스장 지하 등)에서도 열리게 한다.
 // 파일을 고쳤으면 CACHE 버전을 올린다 — 안 올리면 폰이 옛날 파일을 계속 본다.
-const CACHE = 'gym-log-v4';
+const CACHE = 'gym-log-v5';
 const SHELL = [
   '.', 'index.html', 'app.css', 'app.js', 'pose.js', 'plan.js',
   'manifest.webmanifest', 'data/exercises.json',
