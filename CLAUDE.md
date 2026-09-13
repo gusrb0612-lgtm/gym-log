@@ -33,6 +33,14 @@ docs/spec.md           기획서
 `localStorage["gym-log"]` 에 JSON 하나로 들어간다. 스키마를 바꾸면 `version`을 올리고
 `migrate()`에 변환을 추가한다. **기존 데이터를 날리는 변경을 하지 않는다** — 실제 기록이 들어 있다.
 
+실제 스키마:
+
+```js
+{ version: 1,
+  meals:    [{ id, date:"YYYY-MM-DD", name, kcal }],
+  sessions: [{ id, date:"YYYY-MM-DD", exerciseId, sets:[[무게,횟수], ...] }] }
+```
+
 부위(part)와 세부부위(region)는 `data/exercises.json`의 값만 쓴다. 코드에 문자열을 박지 않는다.
 
 ## 검증
