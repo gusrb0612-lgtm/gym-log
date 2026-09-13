@@ -188,3 +188,10 @@ details[open] summary::before{content:'▾ '}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:.4rem 1rem;margin:0;font-size:.88rem}
 .kv dt{color:var(--muted)}
 .kv dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
+
+/* 기구 목록 정리 — 켜짐/꺼짐 토글 칩 */
+.chip.pickable{cursor:pointer;font-size:.78rem;padding:.36rem .7rem;background:var(--accent);
+  color:var(--accent-ink);border-color:transparent;font-weight:600}
+.chip.pickable.off{background:var(--surface-2);color:var(--muted);border:1px dashed var(--line-strong);
+  text-decoration:line-through}
+#equip-groups .fieldlabel{margin:.5rem 0 .35rem}

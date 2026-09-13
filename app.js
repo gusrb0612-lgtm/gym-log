@@ -1,13 +1,13 @@
 'use strict';
 
 const KEY = 'gym-log';
-const VERSION = 3;
+const VERSION = 4;
 let DB = { parts: {}, exercises: [] };   // data/exercises.json (기본 제공)
 let S  = blank();
 let pendingSets = [];
 
 /* ---------- 저장 ---------- */
-function blank(){ return { version: VERSION, meals: [], sessions: [], custom: [], customRegions: {}, profile: null }; }
+function blank(){ return { version: VERSION, meals: [], sessions: [], custom: [], customRegions: {}, profile: null, hidden: [] }; }
 
 function migrate(d){
   if (!d || typeof d !== 'object') return blank();
@@ -18,7 +18,8 @@ function migrate(d){
     sessions: Array.isArray(d.sessions) ? d.sessions : [],
     custom: Array.isArray(d.custom) ? d.custom : [],
     customRegions: (d.customRegions && typeof d.customRegions === 'object') ? d.customRegions : {},
-    profile: (d.profile && typeof d.profile === 'object') ? d.profile : null
+    profile: (d.profile && typeof d.profile === 'object') ? d.profile : null,
+    hidden: Array.isArray(d.hidden) ? d.hidden : []
   };
 }
 
@@ -42,8 +43,9 @@ function daysSince(s){
 const agoText = n => n === 0 ? '오늘' : n === 1 ? '어제' : `${n}일 전`;
 
 /* ---------- 종목 (기본 + 내가 추가한 것) ---------- */
-const allExercises = () => DB.exercises.concat(S.custom);
-const exById = id => allExercises().find(e => e.id === id);
+const everyExercise = () => DB.exercises.concat(S.custom);          // 숨긴 것 포함
+const allExercises  = () => everyExercise().filter(e => !S.hidden.includes(e.id));  // 화면에 보일 것
+const exById = id => everyExercise().find(e => e.id === id);        // 과거 기록은 숨겨도 이름이 나와야 한다
 const partNames = () => Object.keys(DB.parts);
 const regionsOf = part => (DB.parts[part] || []).concat(S.customRegions[part] || []);
 
@@ -158,7 +160,43 @@ function renderWorkout(){
   }));
 }
 
+
+function renderEquip(){
+  const hiddenCount = S.hidden.length;
+  $('#equip-count').textContent = hiddenCount ? `${hiddenCount}개 꺼둠` : `${DB.exercises.length}개`;
+  const groups = partNames().map(part => {
+    const list = DB.exercises.filter(e => e.part === part);
+    if (!list.length) return null;
+    const wrap = document.createElement('div');
+    const lab = document.createElement('p'); lab.className = 'fieldlabel'; lab.textContent = part;
+    const chips = document.createElement('div'); chips.className = 'chips-pick';
+    for (const e of list) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip pickable';
+      b.textContent = e.name;
+      const paint = () => {
+        const off = S.hidden.includes(e.id);
+        b.classList.toggle('off', off);
+        b.setAttribute('aria-pressed', String(!off));
+        b.setAttribute('aria-label', `${e.name} ${off ? '켜기' : '끄기'}`);
+      };
+      paint();
+      b.onclick = () => {
+        S.hidden = S.hidden.includes(e.id) ? S.hidden.filter(x => x !== e.id) : S.hidden.concat(e.id);
+        save(); paint();
+        $('#equip-count').textContent = S.hidden.length ? `${S.hidden.length}개 꺼둠` : `${DB.exercises.length}개`;
+      };
+      chips.append(b);
+    }
+    wrap.append(lab, chips);
+    return wrap;
+  }).filter(Boolean);
+  $('#equip-groups').replaceChildren(...groups);
+}
+
 function renderSettings(){
+  renderEquip();
   $('#stat-line').textContent = `식사 ${S.meals.length}건 · 운동 ${S.sessions.length}건 저장됨`;
   $('#custom-count').textContent = S.custom.length ? `${S.custom.length}개` : '';
   $('#custom-list').replaceChildren(...S.custom.map(e => {
