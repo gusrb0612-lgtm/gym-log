@@ -1,0 +1,117 @@
+:root{
+  --ground:#F2F5F4; --surface:#FFF; --surface-2:#E6ECEA;
+  --ink:#131E1B; --ink-2:#45534F; --muted:#6E7D79;
+  --line:#D5DCDA; --accent:#0E6A58; --accent-ink:#FFF; --accent-soft:#DCEBE6;
+  --warn:#A3491A; --cool:#3F6FA8;
+  --r:12px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0D1312; --surface:#161F1D; --surface-2:#1F2C28;
+    --ink:#E3EAE8; --ink-2:#B0BFBB; --muted:#82938F;
+    --line:#293733; --accent:#4FC2A5; --accent-ink:#06201A; --accent-soft:#15302A;
+    --warn:#E08A5B; --cool:#7FAEDC;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0D1312; --surface:#161F1D; --surface-2:#1F2C28;
+  --ink:#E3EAE8; --ink-2:#B0BFBB; --muted:#82938F;
+  --line:#293733; --accent:#4FC2A5; --accent-ink:#06201A; --accent-soft:#15302A;
+  --warn:#E08A5B; --cool:#7FAEDC;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  margin:0;background:var(--ground);color:var(--ink);
+  font:16px/1.5 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard",sans-serif;
+  padding-bottom:calc(4.5rem + env(safe-area-inset-bottom));
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2{margin:0;font-weight:700;letter-spacing:-.02em}
+h1{font-size:1.5rem}
+p{margin:0}
+button,input,select{font:inherit;color:inherit}
+
+.topbar{
+  position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:flex-end;gap:1rem;
+  padding:calc(.75rem + env(safe-area-inset-top)) 1rem .75rem;
+  background:color-mix(in srgb,var(--ground) 88%,transparent);
+  backdrop-filter:saturate(180%) blur(14px);border-bottom:1px solid var(--line);
+}
+.eyebrow{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-variant-numeric:tabular-nums}
+.kcal-badge{font-size:1.4rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--accent)}
+.kcal-badge small{font-size:.68rem;font-weight:600;color:var(--muted);margin-left:.15rem}
+
+main{padding:1rem}
+.view{display:flex;flex-direction:column;gap:1rem}
+.sec-title{font-size:.95rem;display:flex;align-items:baseline;gap:.5rem}
+.hint{font-size:.72rem;font-weight:400;color:var(--muted)}
+.note{font-size:.82rem;color:var(--muted);line-height:1.55}
+.empty{color:var(--muted);font-size:.9rem;text-align:center;padding:1.5rem 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:.85rem}
+.stack{display:flex;flex-direction:column;gap:.7rem}
+
+input,select{
+  background:var(--surface-2);border:1px solid var(--line);border-radius:9px;
+  padding:.7rem .75rem;min-width:0;width:100%;appearance:none;
+}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+label{display:flex;flex-direction:column;gap:.35rem;font-size:.8rem;color:var(--muted);font-weight:600}
+
+button{
+  background:var(--surface-2);border:1px solid var(--line);border-radius:9px;
+  padding:.7rem .9rem;font-weight:600;cursor:pointer;
+}
+button:active{transform:scale(.985)}
+.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent;padding:.85rem;font-size:1rem}
+.ghost{background:none;border:none;color:var(--muted);padding:.4rem .6rem}
+.filebtn{position:relative;display:block;text-align:center;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:9px;padding:.7rem;font-weight:600;font-size:1rem;color:var(--ink);cursor:pointer}
+.filebtn input{position:absolute;inset:0;opacity:0;width:100%;height:100%}
+
+.row-form{display:grid;grid-template-columns:1fr 5.2rem auto;gap:.5rem;align-items:center}
+
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.5rem}
+.list li{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:.75rem .85rem;display:flex;gap:.75rem;align-items:center;
+}
+.list .grow{flex:1;min-width:0}
+.list .ttl{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.list .sub{font-size:.78rem;color:var(--muted);margin-top:.15rem}
+.list .num{font-variant-numeric:tabular-nums;font-weight:700;color:var(--accent)}
+.del{background:none;border:none;color:var(--muted);padding:.35rem .5rem;font-size:1.05rem}
+
+.part-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(9.5rem,1fr));gap:.6rem}
+.part{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:.7rem .75rem;
+  display:flex;flex-direction:column;gap:.5rem}
+.part.stale{border-color:var(--accent);background:var(--accent-soft)}
+.part-top{display:flex;justify-content:space-between;align-items:baseline;gap:.4rem}
+.part-name{font-weight:700}
+.ago{font-size:.72rem;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.part.stale .ago{color:var(--accent);font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:.28rem}
+.chip{font-size:.68rem;padding:.16rem .42rem;border-radius:99px;border:1px solid var(--line);
+  background:var(--surface-2);color:var(--muted);font-variant-numeric:tabular-nums}
+.chip.fresh{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.chip.never{border-style:dashed}
+
+.sheet{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.45);display:flex;align-items:flex-end}
+.sheet-panel{background:var(--ground);width:100%;max-height:92vh;overflow-y:auto;
+  border-radius:18px 18px 0 0;padding:1rem 1rem calc(1.2rem + env(safe-area-inset-bottom));
+  border-top:1px solid var(--line)}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem}
+.how{font-size:.82rem;color:var(--ink-2);background:var(--surface-2);border-radius:9px;padding:.6rem .7rem;min-height:1rem}
+.setrow{display:grid;grid-template-columns:1fr auto 1fr auto;gap:.45rem;align-items:center}
+.setrow .x{color:var(--muted);font-size:.85rem}
+.setlist{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.setlist li{background:var(--surface-2);border:1px solid var(--line);border-radius:99px;
+  padding:.3rem .6rem;font-size:.82rem;font-variant-numeric:tabular-nums;display:flex;gap:.4rem;align-items:center}
+
+.tabbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:10;display:grid;grid-template-columns:repeat(3,1fr);
+  background:color-mix(in srgb,var(--ground) 90%,transparent);backdrop-filter:saturate(180%) blur(14px);
+  border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);
+}
+.tabbar button{background:none;border:none;border-radius:0;padding:.85rem 0;color:var(--muted);font-size:.8rem}
+.tabbar button.on{color:var(--accent);font-weight:700}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}

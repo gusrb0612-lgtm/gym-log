@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>gym-log</title>
+<meta name="theme-color" content="#0E3F36">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="gym-log">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div>
+    <p class="eyebrow" id="today-label">—</p>
+    <h1 id="view-title">오늘</h1>
+  </div>
+  <p class="kcal-badge"><span id="kcal-total">0</span><small>kcal</small></p>
+</header>
+
+<main>
+  <!-- 오늘 -->
+  <section id="view-today" class="view">
+    <form id="meal-form" class="card row-form" autocomplete="off">
+      <input type="text" id="meal-name" placeholder="먹은 것" required maxlength="40">
+      <input type="number" id="meal-kcal" placeholder="kcal" required min="0" max="9999" inputmode="numeric">
+      <button type="submit">추가</button>
+    </form>
+    <ul id="meal-list" class="list"></ul>
+    <p id="meal-empty" class="empty">오늘 기록이 없습니다.</p>
+  </section>
+
+  <!-- 운동 -->
+  <section id="view-workout" class="view" hidden>
+    <h2 class="sec-title">다음 타깃 <span class="hint">오래된 순서</span></h2>
+    <div id="part-grid" class="part-grid"></div>
+
+    <h2 class="sec-title">최근 기록</h2>
+    <ul id="session-list" class="list"></ul>
+    <p id="session-empty" class="empty">아직 운동 기록이 없습니다.</p>
+
+    <button id="open-log" class="primary">＋ 운동 기록</button>
+  </section>
+
+  <!-- 설정 -->
+  <section id="view-settings" class="view" hidden>
+    <div class="card stack">
+      <h2 class="sec-title">백업</h2>
+      <p class="note">기록은 이 폰 안에만 있습니다. 사파리 데이터를 지우면 같이 사라지니 가끔 내보내 두세요.</p>
+      <button id="btn-export">기록 내보내기</button>
+      <label class="filebtn">기록 불러오기<input type="file" id="file-import" accept="application/json"></label>
+      <p class="note" id="stat-line"></p>
+    </div>
+  </section>
+</main>
+
+<!-- 운동 입력 시트 -->
+<div id="sheet" class="sheet" hidden>
+  <div class="sheet-panel">
+    <div class="sheet-head">
+      <h2>운동 기록</h2>
+      <button id="sheet-close" class="ghost" aria-label="닫기">✕</button>
+    </div>
+    <div class="stack">
+      <label>부위
+        <select id="sel-part"></select>
+      </label>
+      <label>종목
+        <select id="sel-ex"></select>
+      </label>
+      <p class="how" id="ex-how"></p>
+      <div class="setrow">
+        <input type="number" id="in-weight" placeholder="kg" inputmode="decimal" min="0" max="999" step="0.5">
+        <span class="x">×</span>
+        <input type="number" id="in-reps" placeholder="회" inputmode="numeric" min="1" max="999">
+        <button id="btn-addset">세트 추가</button>
+      </div>
+      <ul id="set-list" class="setlist"></ul>
+      <button id="btn-save" class="primary">저장</button>
+    </div>
+  </div>
+</div>
+
+<nav class="tabbar">
+  <button data-view="today" class="on">오늘</button>
+  <button data-view="workout">운동</button>
+  <button data-view="settings">설정</button>
+</nav>
+
+<script src="app.js"></script>
+</body>
+</html>
