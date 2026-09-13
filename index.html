@@ -50,7 +50,7 @@
   <section id="view-plan" class="view" hidden>
     <div id="plan-empty" class="card stack">
       <h2 class="sec-title">아직 인바디 정보가 없습니다</h2>
-      <p class="note">체중과 체지방률만 있으면 하루 목표 칼로리와 탄단지가 계산됩니다. 아래에서 입력하세요.</p>
+      <p class="note">인바디의 체중·체지방률·골격근량을 넣으면 하루 목표 칼로리와 탄단지가 계산됩니다. 아래에서 입력하세요.</p>
     </div>
 
     <div id="plan-today" class="card stack" hidden>
@@ -87,16 +87,17 @@
       </div>
       <div class="two">
         <label>체지방률 (%)<input type="number" id="pf-fat" required min="3" max="60" step="0.1" inputmode="decimal"></label>
-        <label>골격근량 (kg) <span class="hint">선택</span><input type="number" id="pf-smm" min="10" max="80" step="0.1" inputmode="decimal"></label>
+        <label>골격근량 (kg)<input type="number" id="pf-smm" required min="10" max="80" step="0.1" inputmode="decimal"></label>
       </div>
       <label>활동 수준<select id="pf-activity"></select></label>
 
-      <h2 class="sec-title">목표</h2>
+      <h2 class="sec-title">목표 <span class="hint">인바디 기준</span></h2>
       <div class="two">
-        <label>기준<select id="pf-basis"><option value="weight">목표 체중</option><option value="fat">목표 체지방률</option></select></label>
-        <label id="pf-goal-lab">목표 체중 (kg)<input type="number" id="pf-goal" required min="3" max="300" step="0.1" inputmode="decimal"></label>
+        <label>목표 골격근량 (kg)<input type="number" id="pf-goal-smm" required min="10" max="80" step="0.1" inputmode="decimal"></label>
+        <label>목표 체지방률 (%)<input type="number" id="pf-goal-fat" required min="3" max="60" step="0.1" inputmode="decimal"></label>
       </div>
       <label>기간 (주)<input type="number" id="pf-weeks" required min="1" max="104" inputmode="numeric" placeholder="12"></label>
+      <p class="note">지금 수치를 그대로 넣으면 "유지"로 계산됩니다. 목표 체중은 두 숫자에서 역산합니다.</p>
       <button type="submit" class="primary">저장하고 계산</button>
     </form>
   </section>

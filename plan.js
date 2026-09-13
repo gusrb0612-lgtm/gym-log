@@ -53,11 +53,11 @@ function dailyTarget({ tdeeKcal, bmrKcal, sex, kgPerWeek }){
  * 감량은 체중의 0.5~1.0%/주, 증량은 0.25~0.5%/주가 일반적인 권장 범위다. */
 function rateCheck(kgPerWeek, weightKg){
   const pct = Math.abs(kgPerWeek) / weightKg * 100;
-  if (kgPerWeek === 0) return { level:'ok', text:'체중 유지' };
+  if (kgPerWeek === 0) return { level:'ok', text:'체지방 유지' };
   if (kgPerWeek < 0) {
-    if (pct > 1.0) return { level:'warn', text:`주당 체중의 ${pct.toFixed(1)}% 감량 — 너무 빠릅니다. 근육 손실이 커집니다` };
-    if (pct < 0.25) return { level:'slow', text:`주당 ${pct.toFixed(2)}% — 느리지만 안전합니다` };
-    return { level:'ok', text:`주당 체중의 ${pct.toFixed(1)}% 감량 — 적정 범위입니다` };
+    if (pct > 1.0) return { level:'warn', text:`주당 체지방 ${Math.abs(kgPerWeek).toFixed(2)}kg — 너무 빠릅니다. 근육 손실이 커집니다` };
+    if (pct < 0.25) return { level:'slow', text:`주당 체지방 ${Math.abs(kgPerWeek).toFixed(2)}kg — 느리지만 안전합니다` };
+    return { level:'ok', text:`주당 체지방 ${Math.abs(kgPerWeek).toFixed(2)}kg — 적정 범위입니다` };
   }
   if (pct > 0.5) return { level:'warn', text:`주당 체중의 ${pct.toFixed(1)}% 증량 — 체지방이 같이 붙습니다` };
   return { level:'ok', text:`주당 체중의 ${pct.toFixed(2)}% 증량 — 적정 범위입니다` };
@@ -66,7 +66,8 @@ function rateCheck(kgPerWeek, weightKg){
 /* 탄단지. 단백질은 제지방량 기준으로 잡는다 — 체중 기준으로 잡으면
  * 체지방이 많을수록 과하게 나온다. */
 function macros(kcal, lbmKg, weightKg, goalType){
-  const proteinPerLbm = goalType === 'cut' ? 2.2 : goalType === 'bulk' ? 2.0 : 1.8;
+  const proteinPerLbm = (goalType === 'cut' || goalType === 'recomp') ? 2.2
+                      : goalType === 'bulk' ? 2.0 : 1.8;
   const protein = Math.round(lbmKg * proteinPerLbm);
   const fat = Math.max(Math.round(kcal * 0.25 / 9), Math.round(weightKg * 0.8));
   const carbKcal = kcal - protein * 4 - fat * 9;
@@ -95,34 +96,68 @@ function weeksToGoal(currentKg, targetKg, kgPerWeek){
   return w > 0 ? Math.ceil(w) : null;
 }
 
-/* 목표 체지방률에 도달했을 때의 체중 — 제지방량은 유지한다고 가정 */
-const weightAtFatPct = (lbmKg, targetFatPct) => lbmKg / (1 - targetFatPct / 100);
+/* 근육이 붙는 속도는 한계가 있다. 월 0.5kg(골격근량 기준)을 넘으면 낙관적이다 —
+ * 운동을 막 시작했다면 더 빠를 수 있지만 목표로 잡을 값은 아니다. */
+function muscleCheck(smmDeltaKg, weeks){
+  if (smmDeltaKg <= 0.2) return null;
+  const perMonth = smmDeltaKg / (weeks / 4.345);
+  if (perMonth > 0.5) return {
+    level: 'warn',
+    text: `골격근량을 월 ${perMonth.toFixed(2)}kg 늘리는 목표입니다. 보통 월 0.5kg 정도가 현실적인 상한입니다`
+  };
+  return { level:'ok', text:`골격근량 월 +${perMonth.toFixed(2)}kg — 현실적인 속도입니다` };
+}
 
-/* 전체 계산을 한 번에 */
+/* 인바디 수치 → 목표.
+ *
+ * 골격근량(SMM)과 제지방량(LBM)은 다르다. LBM 은 근육 말고 뼈·장기·수분도 포함한다.
+ * 인구 평균 비율을 쓰지 않고 이 사람의 현재 인바디에서 나온 비율을 그대로 쓴다.
+ *
+ * 칼로리는 '체지방량' 변화로 계산한다 — 체중 변화로 잡으면 근육이 늘면서 살이 빠지는
+ * 경우(리컴프) 완전히 틀린 값이 나온다. */
 function buildPlan(p){
-  const lbmKg  = leanMass(p.weightKg, p.bodyFatPct);
-  const bmrK   = bmr(lbmKg);
-  const tdeeK  = tdee(bmrK, p.activity);
-  const goalKg = p.goalFatPct != null ? weightAtFatPct(lbmKg, p.goalFatPct) : p.goalWeightKg;
-  const deltaKg = goalKg - p.weightKg;
-  const kgPerWeek = p.weeks > 0 ? deltaKg / p.weeks : 0;
-  const goalType = deltaKg < -0.5 ? 'cut' : deltaKg > 0.5 ? 'bulk' : 'maintain';
-  const target = dailyTarget({ tdeeKcal: tdeeK, bmrKcal: bmrK, sex: p.sex, kgPerWeek });
+  const lbmKg = leanMass(p.weightKg, p.bodyFatPct);
+  const bmrK  = bmr(lbmKg);
+  const tdeeK = tdee(bmrK, p.activity);
+
+  const ratio = lbmKg / p.smmKg;                 // 제지방량 / 골격근량
+  const ratioOdd = !(ratio > 1.3 && ratio < 3.0); // 인바디 수치가 이상할 때
+
+  const goalLbm    = p.goalSmmKg * ratio;
+  const goalWeight = goalLbm / (1 - p.goalFatPct / 100);
+
+  const fatNow  = p.weightKg  - lbmKg;
+  const fatGoal = goalWeight * p.goalFatPct / 100;
+  const fatDelta = fatGoal - fatNow;
+  const smmDelta = p.goalSmmKg - p.smmKg;
+
+  const fatKgPerWeek = p.weeks > 0 ? fatDelta / p.weeks : 0;
+  const goalType = fatDelta < -0.5 && smmDelta > 0.5 ? 'recomp'
+                 : fatDelta < -0.5 ? 'cut'
+                 : smmDelta > 0.5  ? 'bulk' : 'maintain';
+
+  const target = dailyTarget({ tdeeKcal: tdeeK, bmrKcal: bmrK, sex: p.sex, kgPerWeek: fatKgPerWeek });
+
   return {
     lbmKg: +lbmKg.toFixed(1),
-    fatMassKg: +(p.weightKg - lbmKg).toFixed(1),
+    fatMassKg: +fatNow.toFixed(1),
+    ratio: +ratio.toFixed(2), ratioOdd,
     bmr: Math.round(bmrK),
     tdee: Math.round(tdeeK),
-    goalWeightKg: +goalKg.toFixed(1),
-    deltaKg: +deltaKg.toFixed(1),
-    kgPerWeek: +kgPerWeek.toFixed(2),
+    goalWeightKg: +goalWeight.toFixed(1),
+    goalFatMassKg: +fatGoal.toFixed(1),
+    fatDeltaKg: +fatDelta.toFixed(1),
+    smmDeltaKg: +smmDelta.toFixed(1),
+    weightDeltaKg: +(goalWeight - p.weightKg).toFixed(1),
+    fatKgPerWeek: +fatKgPerWeek.toFixed(2),
     goalType, target,
     rate: rateCheck(target.actualKgPerWeek, p.weightKg),
+    muscle: muscleCheck(smmDelta, p.weeks),
     macro: macros(target.kcal, lbmKg, p.weightKg, goalType),
-    weeksNeeded: weeksToGoal(p.weightKg, goalKg, target.actualKgPerWeek)
+    weeksNeeded: weeksToGoal(fatNow, fatGoal, target.actualKgPerWeek)
   };
 }
 
 if (typeof module !== 'undefined') module.exports = {
-  ACTIVITY, leanMass, bmr, tdee, dailyTarget, rateCheck, macros, burn, weeksToGoal, weightAtFatPct, buildPlan
+  ACTIVITY, leanMass, bmr, tdee, dailyTarget, rateCheck, macros, burn, weeksToGoal, muscleCheck, buildPlan
 };

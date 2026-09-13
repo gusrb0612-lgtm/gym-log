@@ -1,13 +1,30 @@
 'use strict';
 
 const KEY = 'gym-log';
-const VERSION = 4;
+const VERSION = 5;
 let DB = { parts: {}, exercises: [] };   // data/exercises.json (기본 제공)
 let S  = blank();
 let pendingSets = [];
 
 /* ---------- 저장 ---------- */
 function blank(){ return { version: VERSION, meals: [], sessions: [], custom: [], customRegions: {}, profile: null, hidden: [] }; }
+
+/* v4 까지는 목표가 '체중' 또는 '체지방률' 이었다. 이제 골격근량 + 체지방률로 받는다.
+ * 옛 목표는 그대로 쓸 수 없으니 비우되, 인바디 수치는 살려서 다시 묻는 수고를 줄인다. */
+function migrateProfile(p){
+  if (!p || typeof p !== 'object') return null;
+  return {
+    sex: p.sex || 'm',
+    weightKg: p.weightKg, bodyFatPct: p.bodyFatPct, smmKg: p.smmKg || null,
+    activity: p.activity || 1.55,
+    goalSmmKg: p.goalSmmKg != null ? p.goalSmmKg : null,
+    goalFatPct: p.goalFatPct != null ? p.goalFatPct : null,
+    weeks: p.weeks || null
+  };
+}
+
+const profileReady = p => !!p && [p.weightKg, p.bodyFatPct, p.smmKg, p.goalSmmKg, p.goalFatPct, p.weeks]
+  .every(v => Number.isFinite(v) && v > 0);
 
 function migrate(d){
   if (!d || typeof d !== 'object') return blank();
@@ -18,7 +35,7 @@ function migrate(d){
     sessions: Array.isArray(d.sessions) ? d.sessions : [],
     custom: Array.isArray(d.custom) ? d.custom : [],
     customRegions: (d.customRegions && typeof d.customRegions === 'object') ? d.customRegions : {},
-    profile: (d.profile && typeof d.profile === 'object') ? d.profile : null,
+    profile: migrateProfile(d.profile),
     hidden: Array.isArray(d.hidden) ? d.hidden : []
   };
 }
@@ -331,25 +348,25 @@ function cardioOffset(excessKcal){
 
 function renderPlan(){
   const p = S.profile;
-  $('#plan-empty').hidden = !!p;
-  for (const id of ['#plan-today', '#plan-advice', '#plan-detail']) $(id).hidden = !p;
+  const ready = profileReady(p);
+  $('#plan-empty').hidden = ready;
+  for (const id of ['#plan-today', '#plan-advice', '#plan-detail']) $(id).hidden = !ready;
   fillProfileForm();
-  if (!p) return;
+  if (!ready) return;
 
-  const plan = buildPlan({
-    sex: p.sex, weightKg: p.weightKg, bodyFatPct: p.bodyFatPct, activity: p.activity,
-    goalWeightKg: p.basis === 'weight' ? p.goalWeightKg : undefined,
-    goalFatPct:   p.basis === 'fat'    ? p.goalFatPct    : undefined,
-    weeks: p.weeks
-  });
+  const plan = buildPlan(p);
 
   const t = today();
   const eaten = S.meals.filter(m => m.date === t).reduce((a, m) => a + m.kcal, 0);
   const burned = todayBurn();
   const left = plan.target.kcal - eaten + burned;
 
-  const KO = { cut:'감량', bulk:'증량', maintain:'유지' };
-  $('#plan-goaltype').textContent = `${KO[plan.goalType]} · 목표 ${plan.goalWeightKg}kg`;
+  const KO = { cut:'체지방 감량', bulk:'근육 증량', recomp:'리컴프', maintain:'유지' };
+  const deltas = [];
+  if (Math.abs(plan.smmDeltaKg) >= 0.1) deltas.push(`골격근 ${plan.smmDeltaKg > 0 ? '+' : ''}${plan.smmDeltaKg}kg`);
+  if (Math.abs(plan.fatDeltaKg) >= 0.1) deltas.push(`체지방 ${plan.fatDeltaKg > 0 ? '+' : ''}${plan.fatDeltaKg}kg`);
+  $('#plan-goaltype').textContent = KO[plan.goalType] + (deltas.length ? ' · ' + deltas.join(' / ') : '');
+
   $('#b-target').textContent = plan.target.kcal.toLocaleString('ko-KR');
   $('#b-eaten').textContent  = eaten.toLocaleString('ko-KR');
   $('#b-burn').textContent   = burned.toLocaleString('ko-KR');
@@ -371,27 +388,25 @@ function renderPlan(){
     return d;
   }));
 
-  /* 오늘 뭘 할까 */
   const items = [];
-  if (plan.target.clamped) items.push({
-    warn: true, ttl: '목표 기간이 너무 짧습니다',
-    sub: `계산된 식단이 기초대사량(${plan.bmr.toLocaleString('ko-KR')} kcal) 아래로 내려가서 거기서 멈췄습니다. ` +
-         `이 칼로리로는 주당 ${Math.abs(plan.target.actualKgPerWeek)}kg 정도가 한계입니다.`
-  });
-  if (plan.rate.level === 'warn') items.push({ warn: true, ttl: '감량 속도 주의', sub: plan.rate.text });
+  if (plan.ratioOdd) items.push({ warn:true, ttl:'인바디 수치를 확인해 주세요',
+    sub:`골격근량 ${p.smmKg}kg 이 제지방량 ${plan.lbmKg}kg 과 맞지 않습니다. 보통 골격근량은 제지방량의 절반 남짓입니다.` });
+  if (plan.target.clamped) items.push({ warn:true, ttl:'목표 기간이 너무 짧습니다',
+    sub:`계산된 식단이 기초대사량(${plan.bmr.toLocaleString('ko-KR')} kcal) 아래로 내려가서 거기서 멈췄습니다. ` +
+        `이 칼로리로는 주당 체지방 ${Math.abs(plan.target.actualKgPerWeek)}kg 정도가 한계입니다.` });
+  if (plan.rate.level === 'warn')   items.push({ warn:true, ttl:'체지방 감량 속도 주의', sub:plan.rate.text });
+  if (plan.muscle && plan.muscle.level === 'warn') items.push({ warn:true, ttl:'근육 증가 목표가 낙관적입니다', sub:plan.muscle.text });
 
-  if (left < 0) items.push({ ttl: `목표보다 ${Math.abs(left).toLocaleString('ko-KR')} kcal 초과`,
-                             sub: `상쇄하려면 — ${cardioOffset(Math.abs(left))}` });
-  else items.push({ ttl: `${left.toLocaleString('ko-KR')} kcal 남았습니다`, sub: plan.rate.text });
+  if (left < 0) items.push({ ttl:`목표보다 ${Math.abs(left).toLocaleString('ko-KR')} kcal 초과`,
+                             sub:`상쇄하려면 — ${cardioOffset(Math.abs(left))}` });
+  else items.push({ ttl:`${left.toLocaleString('ko-KR')} kcal 남았습니다`, sub:plan.rate.text });
 
   const last = lastByPart();
-  const stale = partNames()
-    .filter(x => x !== '유산소')
+  const stale = partNames().filter(x => x !== '유산소')
     .map(part => ({ part, d: last[part].date ? daysSince(last[part].date) : 999 }))
     .sort((a, b) => b.d - a.d).slice(0, 3);
   for (const { part, d } of stale) {
-    const regions = regionsOf(part);
-    const coldest = regions
+    const coldest = regionsOf(part)
       .map(r => ({ r, d: last[part].regions[r] ? daysSince(last[part].regions[r]) : 999 }))
       .sort((a, b) => b.d - a.d)[0];
     items.push({
@@ -408,21 +423,17 @@ function renderPlan(){
   }));
 
   kv($('#calc-kv'), [
+    ['골격근량', `${p.smmKg} kg → ${p.goalSmmKg} kg`],
+    ['체지방률', `${p.bodyFatPct}% → ${p.goalFatPct}%`],
     ['제지방량', `${plan.lbmKg} kg`],
-    ['체지방량', `${plan.fatMassKg} kg`],
-    ...(p.smmKg ? [['골격근량', `${p.smmKg} kg`]] : []),
+    ['체지방량', `${plan.fatMassKg} kg → ${plan.goalFatMassKg} kg`],
+    ['체중 (역산)', `${S.profile.weightKg} kg → ${plan.goalWeightKg} kg`],
     ['기초대사량', `${plan.bmr.toLocaleString('ko-KR')} kcal`],
     ['활동대사량', `${plan.tdee.toLocaleString('ko-KR')} kcal`],
     ['하루 목표', `${plan.target.kcal.toLocaleString('ko-KR')} kcal`],
-    ['주당 변화', `${plan.target.actualKgPerWeek} kg`],
+    ['주당 체지방', `${plan.target.actualKgPerWeek} kg`],
     ['목표까지', plan.weeksNeeded ? `약 ${plan.weeksNeeded}주` : '—']
   ]);
-}
-
-function syncGoalLabel(){
-  const fat = $('#pf-basis').value === 'fat';
-  $('#pf-goal-lab').firstChild.textContent = fat ? '목표 체지방률 (%) ' : '목표 체중 (kg) ';
-  $('#pf-goal').max = fat ? 60 : 300;
 }
 
 function fillProfileForm(){
@@ -432,15 +443,15 @@ function fillProfileForm(){
   }
   const p = S.profile;
   if (!p) return;
+  const set = (sel, v) => { if (Number.isFinite(v) && v > 0) $(sel).value = v; };
   $('#pf-sex').value = p.sex;
-  $('#pf-weight').value = p.weightKg;
-  $('#pf-fat').value = p.bodyFatPct;
-  $('#pf-smm').value = p.smmKg || '';
+  set('#pf-weight', p.weightKg);
+  set('#pf-fat', p.bodyFatPct);
+  set('#pf-smm', p.smmKg);
   $('#pf-activity').value = p.activity;
-  $('#pf-basis').value = p.basis;
-  $('#pf-goal').value = p.basis === 'fat' ? p.goalFatPct : p.goalWeightKg;
-  $('#pf-weeks').value = p.weeks;
-  syncGoalLabel();
+  set('#pf-goal-smm', p.goalSmmKg);
+  set('#pf-goal-fat', p.goalFatPct);
+  set('#pf-weeks', p.weeks);
 }
 
 /* ---------- 백업 ---------- */
@@ -564,24 +575,17 @@ async function init(){
   });
 
 
-  $('#pf-basis').onchange = syncGoalLabel;
   $('#profile-form').addEventListener('submit', ev => {
     ev.preventDefault();
-    const basis = $('#pf-basis').value;
-    const goal = parseFloat($('#pf-goal').value);
+    const num = sel => parseFloat($(sel).value);
     const prof = {
       sex: $('#pf-sex').value,
-      weightKg: parseFloat($('#pf-weight').value),
-      bodyFatPct: parseFloat($('#pf-fat').value),
-      smmKg: parseFloat($('#pf-smm').value) || null,
+      weightKg: num('#pf-weight'), bodyFatPct: num('#pf-fat'), smmKg: num('#pf-smm'),
       activity: parseFloat($('#pf-activity').value),
-      basis,
-      goalWeightKg: basis === 'weight' ? goal : null,
-      goalFatPct:   basis === 'fat'    ? goal : null,
+      goalSmmKg: num('#pf-goal-smm'), goalFatPct: num('#pf-goal-fat'),
       weeks: parseInt($('#pf-weeks').value, 10)
     };
-    if (!Number.isFinite(prof.weightKg) || !Number.isFinite(prof.bodyFatPct)
-        || !Number.isFinite(goal) || !Number.isFinite(prof.weeks)) return;
+    if (!profileReady(prof)) { alert('빈 칸을 모두 채워 주세요.'); return; }
     S.profile = prof; save(); renderPlan();
   });
 
