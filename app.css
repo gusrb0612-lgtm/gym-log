@@ -116,3 +116,38 @@ button:active{transform:scale(.985)}
 .tabbar button{background:none;border:none;border-radius:0;padding:.85rem 0;color:var(--muted);font-size:.8rem}
 .tabbar button.on{color:var(--accent);font-weight:700}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---- 졸라맨 자세 그림 ---- */
+.figure-box{
+  background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);
+  padding:.4rem;display:flex;justify-content:center;
+}
+.figure{width:100%;max-width:11.5rem;height:auto;display:block}
+.fig-body{stroke:var(--ink);stroke-width:4.5;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.fig-joint{fill:var(--ink)}
+.fig-gear{stroke:var(--cool);stroke-width:4;stroke-linecap:round;fill:none}
+.fig-bench{stroke:var(--muted);stroke-width:5;stroke-linecap:round;fill:none}
+.fig-cable{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:4 3;fill:none}
+.fig-ground{stroke:var(--line-strong);stroke-width:2}
+.fig-target{fill:var(--accent);opacity:.85}
+
+/* ---- 새 종목 폼 ---- */
+.with-btn{display:grid;grid-template-columns:1fr auto;gap:.45rem;align-items:center}
+.with-btn button{padding:.7rem .95rem;font-size:1.05rem;line-height:1}
+.fieldlabel{font-size:.8rem;color:var(--muted);font-weight:600;margin-bottom:.4rem}
+.chips-pick{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.5rem}
+.pick{
+  display:inline-flex;flex-direction:row;align-items:center;gap:.3rem;
+  background:var(--surface-2);border:1px solid var(--line);border-radius:99px;
+  padding:.32rem .7rem;font-size:.82rem;color:var(--ink);font-weight:500;cursor:pointer;
+}
+.pick input{position:absolute;width:1px;height:1px;opacity:0;margin:0;padding:0}
+.pick:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.pick:has(input:checked){background:var(--accent);color:var(--accent-ink);border-color:transparent}
+textarea{
+  background:var(--surface-2);border:1px solid var(--line);border-radius:9px;
+  padding:.7rem .75rem;width:100%;resize:vertical;font:inherit;color:inherit;
+}
+.setrow.cardio{grid-template-columns:1fr 1fr}
+.setrow.cardio label{gap:.3rem}
+#ex-link-wrap a{font-size:.85rem}

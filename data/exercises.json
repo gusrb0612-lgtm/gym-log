@@ -1,35 +1,365 @@
 {
-  "_주석": "구글 시트에서 변환해 교체할 씨앗 데이터. 실제 다니는 헬스장 기구로 바꾼다. link는 직접 채운다 — 지어낸 주소를 넣지 않는다.",
+  "_주석": "구글 시트에서 변환해 교체할 씨앗 데이터. 실제 다니는 헬스장 기구로 바꾼다. link 는 직접 채운다 — 지어낸 주소를 넣지 않는다. pose 는 pose.js 의 프리셋 이름이어야 한다. kind 는 strength 또는 cardio.",
   "parts": {
-    "가슴":   ["상부", "중앙", "하부"],
-    "등":     ["광배 상부", "광배 하부", "중앙/승모", "기립근"],
-    "어깨":   ["전면", "측면", "후면"],
-    "하체":   ["대퇴사두", "햄스트링", "둔근", "종아리"],
-    "팔":     ["이두", "삼두"],
-    "코어":   ["복직근", "복사근"]
+    "가슴": [
+      "상부",
+      "중앙",
+      "하부"
+    ],
+    "등": [
+      "광배 상부",
+      "광배 하부",
+      "중앙/승모",
+      "기립근"
+    ],
+    "어깨": [
+      "전면",
+      "측면",
+      "후면"
+    ],
+    "하체": [
+      "대퇴사두",
+      "햄스트링",
+      "둔근",
+      "종아리"
+    ],
+    "팔": [
+      "이두",
+      "삼두"
+    ],
+    "코어": [
+      "복직근",
+      "복사근"
+    ],
+    "유산소": []
   },
   "exercises": [
-    { "id": "incline-bench",   "name": "인클라인 벤치프레스", "part": "가슴", "regions": ["상부"], "how": "등판 30~45도. 어깨를 뒤로 모으고 바를 쇄골 아래로 내린다.", "link": "" },
-    { "id": "flat-bench",      "name": "플랫 벤치프레스",     "part": "가슴", "regions": ["중앙"], "how": "견갑을 고정하고 바를 명치 위로 내린다.", "link": "" },
-    { "id": "chest-press",     "name": "체스트 프레스 머신",   "part": "가슴", "regions": ["중앙"], "how": "손잡이가 가슴 중앙 높이에 오게 시트를 맞춘다.", "link": "" },
-    { "id": "pec-deck",        "name": "펙덱 플라이",         "part": "가슴", "regions": ["중앙"], "how": "팔꿈치 약간 굽힌 상태 유지. 가슴으로 모은다.", "link": "" },
-    { "id": "dip",             "name": "딥스",               "part": "가슴", "regions": ["하부"], "how": "상체를 앞으로 기울일수록 가슴 개입이 커진다.", "link": "" },
-    { "id": "lat-pulldown",    "name": "랫 풀다운",           "part": "등",   "regions": ["광배 상부"], "how": "가슴을 들고 팔꿈치를 아래로 당긴다.", "link": "" },
-    { "id": "seated-row",      "name": "시티드 로우",         "part": "등",   "regions": ["광배 하부", "중앙/승모"], "how": "상체를 세우고 팔꿈치를 몸통 옆으로 당긴다.", "link": "" },
-    { "id": "t-bar-row",       "name": "티바 로우",           "part": "등",   "regions": ["중앙/승모"], "how": "힙힌지로 상체 고정. 배꼽 쪽으로 당긴다.", "link": "" },
-    { "id": "back-extension",  "name": "백 익스텐션",         "part": "등",   "regions": ["기립근"], "how": "허리를 과신전하지 않는다. 둔근으로 올린다.", "link": "" },
-    { "id": "shoulder-press",  "name": "숄더 프레스 머신",     "part": "어깨", "regions": ["전면"], "how": "손잡이가 귀 높이에 오게 시트를 맞춘다.", "link": "" },
-    { "id": "lateral-raise",   "name": "사이드 래터럴 레이즈", "part": "어깨", "regions": ["측면"], "how": "새끼손가락이 살짝 위. 어깨 높이까지만.", "link": "" },
-    { "id": "reverse-pec",     "name": "리어 델트 플라이",     "part": "어깨", "regions": ["후면"], "how": "가슴을 패드에 붙이고 뒤로 벌린다.", "link": "" },
-    { "id": "squat",           "name": "스쿼트",             "part": "하체", "regions": ["대퇴사두", "둔근"], "how": "발끝과 무릎 방향을 맞추고 고관절부터 접는다.", "link": "" },
-    { "id": "leg-press",       "name": "레그 프레스",         "part": "하체", "regions": ["대퇴사두", "둔근"], "how": "허리가 시트에서 뜨지 않는 깊이까지만.", "link": "" },
-    { "id": "leg-extension",   "name": "레그 익스텐션",       "part": "하체", "regions": ["대퇴사두"], "how": "무릎 축과 기계 회전축을 맞춘다.", "link": "" },
-    { "id": "leg-curl",        "name": "레그 컬",            "part": "하체", "regions": ["햄스트링"], "how": "골반을 고정하고 무릎만 접는다.", "link": "" },
-    { "id": "hip-thrust",      "name": "힙 스러스트",         "part": "하체", "regions": ["둔근"], "how": "턱을 당기고 갈비뼈를 닫은 채 골반을 밀어 올린다.", "link": "" },
-    { "id": "calf-raise",      "name": "카프 레이즈",         "part": "하체", "regions": ["종아리"], "how": "가동범위 끝까지. 맨 아래에서 한 박자 멈춘다.", "link": "" },
-    { "id": "barbell-curl",    "name": "바벨 컬",            "part": "팔",   "regions": ["이두"], "how": "팔꿈치를 몸통에 고정. 반동 없이.", "link": "" },
-    { "id": "cable-pushdown",  "name": "케이블 푸시다운",      "part": "팔",   "regions": ["삼두"], "how": "팔꿈치를 옆구리에 붙이고 아래로 편다.", "link": "" },
-    { "id": "hanging-leg",     "name": "행잉 레그 레이즈",     "part": "코어", "regions": ["복직근"], "how": "골반을 말아 올린다. 다리만 흔들지 않는다.", "link": "" },
-    { "id": "cable-twist",     "name": "케이블 트위스트",      "part": "코어", "regions": ["복사근"], "how": "골반은 고정하고 흉추만 회전한다.", "link": "" }
+    {
+      "id": "incline-bench",
+      "name": "인클라인 벤치프레스",
+      "part": "가슴",
+      "regions": [
+        "상부"
+      ],
+      "how": "등판 30~45도. 어깨를 뒤로 모으고 바를 쇄골 아래로 내린다.",
+      "link": "",
+      "kind": "strength",
+      "pose": "기대 누워 밀기"
+    },
+    {
+      "id": "flat-bench",
+      "name": "플랫 벤치프레스",
+      "part": "가슴",
+      "regions": [
+        "중앙"
+      ],
+      "how": "견갑을 고정하고 바를 명치 위로 내린다.",
+      "link": "",
+      "kind": "strength",
+      "pose": "누워서 밀기"
+    },
+    {
+      "id": "chest-press",
+      "name": "체스트 프레스 머신",
+      "part": "가슴",
+      "regions": [
+        "중앙"
+      ],
+      "how": "손잡이가 가슴 중앙 높이에 오게 시트를 맞춘다.",
+      "link": "",
+      "kind": "strength",
+      "pose": "앉아서 앞으로 밀기"
+    },
+    {
+      "id": "pec-deck",
+      "name": "펙덱 플라이",
+      "part": "가슴",
+      "regions": [
+        "중앙"
+      ],
+      "how": "팔꿈치 약간 굽힌 상태 유지. 가슴으로 모은다.",
+      "link": "",
+      "kind": "strength",
+      "pose": "앉아서 모으기"
+    },
+    {
+      "id": "dip",
+      "name": "딥스",
+      "part": "가슴",
+      "regions": [
+        "하부"
+      ],
+      "how": "상체를 앞으로 기울일수록 가슴 개입이 커진다.",
+      "link": "",
+      "kind": "strength",
+      "pose": "몸 들어올리기"
+    },
+    {
+      "id": "lat-pulldown",
+      "name": "랫 풀다운",
+      "part": "등",
+      "regions": [
+        "광배 상부"
+      ],
+      "how": "가슴을 들고 팔꿈치를 아래로 당긴다.",
+      "link": "",
+      "kind": "strength",
+      "pose": "위에서 당기기"
+    },
+    {
+      "id": "seated-row",
+      "name": "시티드 로우",
+      "part": "등",
+      "regions": [
+        "광배 하부",
+        "중앙/승모"
+      ],
+      "how": "상체를 세우고 팔꿈치를 몸통 옆으로 당긴다.",
+      "link": "",
+      "kind": "strength",
+      "pose": "앉아서 당기기"
+    },
+    {
+      "id": "t-bar-row",
+      "name": "티바 로우",
+      "part": "등",
+      "regions": [
+        "중앙/승모"
+      ],
+      "how": "힙힌지로 상체 고정. 배꼽 쪽으로 당긴다.",
+      "link": "",
+      "kind": "strength",
+      "pose": "숙여서 당기기"
+    },
+    {
+      "id": "back-extension",
+      "name": "백 익스텐션",
+      "part": "등",
+      "regions": [
+        "기립근"
+      ],
+      "how": "허리를 과신전하지 않는다. 둔근으로 올린다.",
+      "link": "",
+      "kind": "strength",
+      "pose": "힙 힌지"
+    },
+    {
+      "id": "shoulder-press",
+      "name": "숄더 프레스 머신",
+      "part": "어깨",
+      "regions": [
+        "전면"
+      ],
+      "how": "손잡이가 귀 높이에 오게 시트를 맞춘다.",
+      "link": "",
+      "kind": "strength",
+      "pose": "앉아서 위로 밀기"
+    },
+    {
+      "id": "lateral-raise",
+      "name": "사이드 래터럴 레이즈",
+      "part": "어깨",
+      "regions": [
+        "측면"
+      ],
+      "how": "새끼손가락이 살짝 위. 어깨 높이까지만.",
+      "link": "",
+      "kind": "strength",
+      "pose": "옆으로 들기"
+    },
+    {
+      "id": "reverse-pec",
+      "name": "리어 델트 플라이",
+      "part": "어깨",
+      "regions": [
+        "후면"
+      ],
+      "how": "가슴을 패드에 붙이고 뒤로 벌린다.",
+      "link": "",
+      "kind": "strength",
+      "pose": "뒤로 벌리기"
+    },
+    {
+      "id": "squat",
+      "name": "스쿼트",
+      "part": "하체",
+      "regions": [
+        "대퇴사두",
+        "둔근"
+      ],
+      "how": "발끝과 무릎 방향을 맞추고 고관절부터 접는다.",
+      "link": "",
+      "kind": "strength",
+      "pose": "스쿼트"
+    },
+    {
+      "id": "leg-press",
+      "name": "레그 프레스",
+      "part": "하체",
+      "regions": [
+        "대퇴사두",
+        "둔근"
+      ],
+      "how": "허리가 시트에서 뜨지 않는 깊이까지만.",
+      "link": "",
+      "kind": "strength",
+      "pose": "누워서 다리 밀기"
+    },
+    {
+      "id": "leg-extension",
+      "name": "레그 익스텐션",
+      "part": "하체",
+      "regions": [
+        "대퇴사두"
+      ],
+      "how": "무릎 축과 기계 회전축을 맞춘다.",
+      "link": "",
+      "kind": "strength",
+      "pose": "앉아서 다리 펴기"
+    },
+    {
+      "id": "leg-curl",
+      "name": "레그 컬",
+      "part": "하체",
+      "regions": [
+        "햄스트링"
+      ],
+      "how": "골반을 고정하고 무릎만 접는다.",
+      "link": "",
+      "kind": "strength",
+      "pose": "엎드려 다리 접기"
+    },
+    {
+      "id": "hip-thrust",
+      "name": "힙 스러스트",
+      "part": "하체",
+      "regions": [
+        "둔근"
+      ],
+      "how": "턱을 당기고 갈비뼈를 닫은 채 골반을 밀어 올린다.",
+      "link": "",
+      "kind": "strength",
+      "pose": "힙 힌지"
+    },
+    {
+      "id": "calf-raise",
+      "name": "카프 레이즈",
+      "part": "하체",
+      "regions": [
+        "종아리"
+      ],
+      "how": "가동범위 끝까지. 맨 아래에서 한 박자 멈춘다.",
+      "link": "",
+      "kind": "strength",
+      "pose": "서서 발목"
+    },
+    {
+      "id": "barbell-curl",
+      "name": "바벨 컬",
+      "part": "팔",
+      "regions": [
+        "이두"
+      ],
+      "how": "팔꿈치를 몸통에 고정. 반동 없이.",
+      "link": "",
+      "kind": "strength",
+      "pose": "서서 컬"
+    },
+    {
+      "id": "cable-pushdown",
+      "name": "케이블 푸시다운",
+      "part": "팔",
+      "regions": [
+        "삼두"
+      ],
+      "how": "팔꿈치를 옆구리에 붙이고 아래로 편다.",
+      "link": "",
+      "kind": "strength",
+      "pose": "서서 아래로 밀기"
+    },
+    {
+      "id": "hanging-leg",
+      "name": "행잉 레그 레이즈",
+      "part": "코어",
+      "regions": [
+        "복직근"
+      ],
+      "how": "골반을 말아 올린다. 다리만 흔들지 않는다.",
+      "link": "",
+      "kind": "strength",
+      "pose": "매달리기"
+    },
+    {
+      "id": "cable-twist",
+      "name": "케이블 트위스트",
+      "part": "코어",
+      "regions": [
+        "복사근"
+      ],
+      "how": "골반은 고정하고 흉추만 회전한다.",
+      "link": "",
+      "kind": "strength",
+      "pose": "비틀기"
+    },
+    {
+      "id": "treadmill",
+      "name": "러닝머신",
+      "part": "유산소",
+      "regions": [],
+      "kind": "cardio",
+      "how": "상체를 세우고 시선은 앞. 보폭보다 회전수를 먼저 올린다.",
+      "link": "",
+      "pose": "달리기"
+    },
+    {
+      "id": "cycle",
+      "name": "사이클",
+      "part": "유산소",
+      "regions": [],
+      "kind": "cardio",
+      "how": "안장 높이는 페달이 가장 아래일 때 무릎이 살짝 굽는 정도.",
+      "link": "",
+      "pose": "자전거"
+    },
+    {
+      "id": "rowing",
+      "name": "로잉머신",
+      "part": "유산소",
+      "regions": [],
+      "kind": "cardio",
+      "how": "다리 → 몸통 → 팔 순서로 밀고, 돌아올 때는 역순.",
+      "link": "",
+      "pose": "앉아서 당기기"
+    },
+    {
+      "id": "elliptical",
+      "name": "일립티컬",
+      "part": "유산소",
+      "regions": [],
+      "kind": "cardio",
+      "how": "발 전체로 밟는다. 손잡이에 체중을 싣지 않는다.",
+      "link": "",
+      "pose": "달리기"
+    },
+    {
+      "id": "stair",
+      "name": "스텝밀",
+      "part": "유산소",
+      "regions": [],
+      "kind": "cardio",
+      "how": "난간을 잡고 버티지 않는다. 한 계단씩 온발로 딛는다.",
+      "link": "",
+      "pose": "달리기"
+    },
+    {
+      "id": "walk",
+      "name": "걷기",
+      "part": "유산소",
+      "regions": [],
+      "kind": "cardio",
+      "how": "경사를 올리면 무릎 부담 없이 강도를 높일 수 있다.",
+      "link": "",
+      "pose": "달리기"
+    }
   ]
 }
