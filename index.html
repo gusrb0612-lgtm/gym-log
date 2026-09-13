@@ -2,6 +2,10 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<!-- 이 앱은 어떤 데이터도 외부로 보내지 않는다. CSP 로 브라우저가 그걸 강제하게 한다 —
+     실수로 외부 스크립트나 요청이 들어가도 차단된다. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'; frame-ancestors 'none'">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>gym-log</title>
 <meta name="theme-color" content="#0E3F36">
