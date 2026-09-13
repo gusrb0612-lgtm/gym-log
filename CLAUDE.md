@@ -22,9 +22,12 @@
 index.html             화면 전체 (탭 3개)
 app.css                스타일
 app.js                 로직 + 저장
+pose.js                졸라맨 자세 렌더러 (관절 각도 → SVG)
+plan.js                인바디·목표 계산 — 순수 함수만, DOM 안 건드림
 sw.js                  서비스 워커 (오프라인)
 manifest.webmanifest   홈 화면 설치 정보
 data/exercises.json    운동 기구 DB — 구글 시트에서 변환해 들어옴
+test/plan.test.js      plan.js 단위 테스트 (node test/plan.test.js)
 docs/spec.md           기획서
 ```
 
@@ -44,6 +47,13 @@ docs/spec.md           기획서
 부위(part)와 세부부위(region)는 `data/exercises.json`의 값만 쓴다. 코드에 문자열을 박지 않는다.
 
 ## 검증
+
+```sh
+node test/plan.test.js    # 계산 로직 — 커밋 전에 돌린다
+```
+
+계산식을 건드렸으면 테스트를 먼저 고치고 통과시킨다. **기초대사량 아래를 추천하는 식단이
+나오면 안 된다** — 안전장치가 깨진 것이다.
 
 브라우저 콘솔에 에러가 없어야 하고, 사파리 비공개 탭에서도(= 저장 실패해도) 화면이 떠야 한다.
 `./serve.sh` 로 로컬 확인, 실제 확인은 아이폰에서 한다.

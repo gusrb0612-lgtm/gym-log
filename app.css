@@ -151,3 +151,40 @@ textarea{
 .setrow.cardio{grid-template-columns:1fr 1fr}
 .setrow.cardio label{gap:.3rem}
 #ex-link-wrap a{font-size:.85rem}
+
+/* ---- 목표 탭 ---- */
+.tabbar{grid-template-columns:repeat(4,1fr)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+
+.budget{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;text-align:center}
+.budget > div{
+  background:var(--surface-2);border:1px solid var(--line);border-radius:10px;
+  padding:.6rem .3rem;display:flex;flex-direction:column;gap:.15rem;min-width:0;
+}
+.budget .b-rest{background:var(--accent-soft);border-color:var(--accent)}
+.b-num{font-size:1.05rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink)}
+.b-num.minus{color:var(--warn)}
+.b-num.plus{color:var(--cool)}
+.b-rest .b-num{color:var(--accent);font-size:1.2rem}
+.b-rest .b-num.over{color:var(--warn)}
+.b-lab{font-size:.66rem;color:var(--muted);white-space:nowrap}
+
+.macro-row{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem}
+.macro{
+  background:var(--surface-2);border:1px solid var(--line);border-radius:10px;
+  padding:.55rem .4rem;text-align:center;display:flex;flex-direction:column;gap:.1rem;
+}
+.m-num{font-size:1.05rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--accent)}
+.m-lab{font-size:.72rem;color:var(--ink-2)}
+.m-kcal{font-size:.64rem;color:var(--muted);font-variant-numeric:tabular-nums}
+
+.warn-row{border-color:var(--warn)!important;background:var(--warn-soft)}
+.warn-row .ttl{color:var(--warn)}
+
+summary{font-weight:600;font-size:.95rem;cursor:pointer;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:'▸ ';color:var(--muted)}
+details[open] summary::before{content:'▾ '}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:.4rem 1rem;margin:0;font-size:.88rem}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}

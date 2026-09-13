@@ -1,13 +1,13 @@
 'use strict';
 
 const KEY = 'gym-log';
-const VERSION = 2;
+const VERSION = 3;
 let DB = { parts: {}, exercises: [] };   // data/exercises.json (기본 제공)
 let S  = blank();
 let pendingSets = [];
 
 /* ---------- 저장 ---------- */
-function blank(){ return { version: VERSION, meals: [], sessions: [], custom: [], customRegions: {} }; }
+function blank(){ return { version: VERSION, meals: [], sessions: [], custom: [], customRegions: {}, profile: null }; }
 
 function migrate(d){
   if (!d || typeof d !== 'object') return blank();
@@ -17,7 +17,8 @@ function migrate(d){
     meals: Array.isArray(d.meals) ? d.meals : [],
     sessions: Array.isArray(d.sessions) ? d.sessions : [],
     custom: Array.isArray(d.custom) ? d.custom : [],
-    customRegions: (d.customRegions && typeof d.customRegions === 'object') ? d.customRegions : {}
+    customRegions: (d.customRegions && typeof d.customRegions === 'object') ? d.customRegions : {},
+    profile: (d.profile && typeof d.profile === 'object') ? d.profile : null
   };
 }
 
@@ -174,12 +175,14 @@ function renderSettings(){
 }
 
 /* ---------- 탭 ---------- */
-const TITLES = { today:'오늘', workout:'운동', settings:'설정' };
+const TITLES = { today:'오늘', workout:'운동', plan:'목표', settings:'설정' };
 function show(view){
   for (const el of document.querySelectorAll('.view')) el.hidden = el.id !== `view-${view}`;
   for (const b of document.querySelectorAll('.tabbar button')) b.classList.toggle('on', b.dataset.view === view);
   $('#view-title').textContent = TITLES[view];
+  renderToday();   // 헤더 kcal 배지는 어느 탭에서든 오늘 값을 보여준다
   if (view === 'workout') renderWorkout();
+  if (view === 'plan') renderPlan();
   if (view === 'settings') renderSettings();
 }
 
@@ -260,6 +263,146 @@ function syncKind(){
   if (cardio) $('#nx-pose').value = '달리기';
   renderRegionPicker();
   paintFigure($('#nx-preview'), $('#nx-pose').value, []);
+}
+
+
+/* ---------- 목표 탭 ---------- */
+function todayBurn(){
+  const t = today();
+  const w = S.profile ? S.profile.weightKg : 0;
+  return S.sessions.filter(s => s.date === t)
+                   .reduce((a, s) => a + burn(s, exById(s.exerciseId), w), 0);
+}
+
+function kv(box, pairs){
+  box.replaceChildren(...pairs.flatMap(([k, v]) => {
+    const a = document.createElement('dt'); a.textContent = k;
+    const b = document.createElement('dd'); b.textContent = v;
+    return [a, b];
+  }));
+}
+
+function cardioOffset(excessKcal){
+  const w = S.profile.weightKg;
+  return allExercises()
+    .filter(e => e.kind === 'cardio' && e.met)
+    .slice(0, 3)
+    .map(e => `${e.name} ${Math.ceil(excessKcal / (e.met * 3.5 * w / 200))}분`)
+    .join(' · ');
+}
+
+function renderPlan(){
+  const p = S.profile;
+  $('#plan-empty').hidden = !!p;
+  for (const id of ['#plan-today', '#plan-advice', '#plan-detail']) $(id).hidden = !p;
+  fillProfileForm();
+  if (!p) return;
+
+  const plan = buildPlan({
+    sex: p.sex, weightKg: p.weightKg, bodyFatPct: p.bodyFatPct, activity: p.activity,
+    goalWeightKg: p.basis === 'weight' ? p.goalWeightKg : undefined,
+    goalFatPct:   p.basis === 'fat'    ? p.goalFatPct    : undefined,
+    weeks: p.weeks
+  });
+
+  const t = today();
+  const eaten = S.meals.filter(m => m.date === t).reduce((a, m) => a + m.kcal, 0);
+  const burned = todayBurn();
+  const left = plan.target.kcal - eaten + burned;
+
+  const KO = { cut:'감량', bulk:'증량', maintain:'유지' };
+  $('#plan-goaltype').textContent = `${KO[plan.goalType]} · 목표 ${plan.goalWeightKg}kg`;
+  $('#b-target').textContent = plan.target.kcal.toLocaleString('ko-KR');
+  $('#b-eaten').textContent  = eaten.toLocaleString('ko-KR');
+  $('#b-burn').textContent   = burned.toLocaleString('ko-KR');
+  $('#b-left').textContent   = left.toLocaleString('ko-KR');
+  $('#b-left').classList.toggle('over', left < 0);
+  $('#burn-note').textContent = burned
+    ? '운동 소모는 MET 기반 추정치입니다. 근력 운동 쪽은 오차가 큽니다.'
+    : '오늘 운동 기록을 남기면 소모 칼로리가 더해집니다.';
+
+  const m = plan.macro;
+  $('#macro-row').replaceChildren(...[
+    ['단백질', m.protein, 4], ['탄수화물', m.carb, 4], ['지방', m.fat, 9]
+  ].map(([label, g, perG]) => {
+    const d = document.createElement('div'); d.className = 'macro';
+    const n = document.createElement('span'); n.className = 'm-num'; n.textContent = `${g}g`;
+    const l = document.createElement('span'); l.className = 'm-lab'; l.textContent = label;
+    const k = document.createElement('span'); k.className = 'm-kcal'; k.textContent = `${(g*perG).toLocaleString('ko-KR')} kcal`;
+    d.append(n, l, k);
+    return d;
+  }));
+
+  /* 오늘 뭘 할까 */
+  const items = [];
+  if (plan.target.clamped) items.push({
+    warn: true, ttl: '목표 기간이 너무 짧습니다',
+    sub: `계산된 식단이 기초대사량(${plan.bmr.toLocaleString('ko-KR')} kcal) 아래로 내려가서 거기서 멈췄습니다. ` +
+         `이 칼로리로는 주당 ${Math.abs(plan.target.actualKgPerWeek)}kg 정도가 한계입니다.`
+  });
+  if (plan.rate.level === 'warn') items.push({ warn: true, ttl: '감량 속도 주의', sub: plan.rate.text });
+
+  if (left < 0) items.push({ ttl: `목표보다 ${Math.abs(left).toLocaleString('ko-KR')} kcal 초과`,
+                             sub: `상쇄하려면 — ${cardioOffset(Math.abs(left))}` });
+  else items.push({ ttl: `${left.toLocaleString('ko-KR')} kcal 남았습니다`, sub: plan.rate.text });
+
+  const last = lastByPart();
+  const stale = partNames()
+    .filter(x => x !== '유산소')
+    .map(part => ({ part, d: last[part].date ? daysSince(last[part].date) : 999 }))
+    .sort((a, b) => b.d - a.d).slice(0, 3);
+  for (const { part, d } of stale) {
+    const regions = regionsOf(part);
+    const coldest = regions
+      .map(r => ({ r, d: last[part].regions[r] ? daysSince(last[part].regions[r]) : 999 }))
+      .sort((a, b) => b.d - a.d)[0];
+    items.push({
+      ttl: part + (coldest ? ` · ${coldest.r}` : ''),
+      sub: d === 999 ? '아직 기록 없음' : `마지막 ${agoText(d)}` +
+           (coldest && coldest.d === 999 ? ` — ${coldest.r}는 한 번도 안 했습니다` : '')
+    });
+  }
+
+  $('#advice-list').replaceChildren(...items.map(it => {
+    const li = row(it.ttl, it.sub);
+    if (it.warn) li.classList.add('warn-row');
+    return li;
+  }));
+
+  kv($('#calc-kv'), [
+    ['제지방량', `${plan.lbmKg} kg`],
+    ['체지방량', `${plan.fatMassKg} kg`],
+    ...(p.smmKg ? [['골격근량', `${p.smmKg} kg`]] : []),
+    ['기초대사량', `${plan.bmr.toLocaleString('ko-KR')} kcal`],
+    ['활동대사량', `${plan.tdee.toLocaleString('ko-KR')} kcal`],
+    ['하루 목표', `${plan.target.kcal.toLocaleString('ko-KR')} kcal`],
+    ['주당 변화', `${plan.target.actualKgPerWeek} kg`],
+    ['목표까지', plan.weeksNeeded ? `약 ${plan.weeksNeeded}주` : '—']
+  ]);
+}
+
+function syncGoalLabel(){
+  const fat = $('#pf-basis').value === 'fat';
+  $('#pf-goal-lab').firstChild.textContent = fat ? '목표 체지방률 (%) ' : '목표 체중 (kg) ';
+  $('#pf-goal').max = fat ? 60 : 300;
+}
+
+function fillProfileForm(){
+  if (!$('#pf-activity').options.length) {
+    $('#pf-activity').replaceChildren(...ACTIVITY.map(a => new Option(`${a.label} — ${a.hint}`, a.id)));
+    $('#pf-activity').value = 1.55;
+  }
+  const p = S.profile;
+  if (!p) return;
+  $('#pf-sex').value = p.sex;
+  $('#pf-weight').value = p.weightKg;
+  $('#pf-fat').value = p.bodyFatPct;
+  $('#pf-smm').value = p.smmKg || '';
+  $('#pf-activity').value = p.activity;
+  $('#pf-basis').value = p.basis;
+  $('#pf-goal').value = p.basis === 'fat' ? p.goalFatPct : p.goalWeightKg;
+  $('#pf-weeks').value = p.weeks;
+  syncGoalLabel();
 }
 
 /* ---------- 백업 ---------- */
@@ -380,6 +523,28 @@ async function init(){
     $('#ex-sheet').hidden = true;
     if (!$('#sheet').hidden) { $('#sel-part').value = part; fillExercises(); $('#sel-ex').value = S.custom.at(-1).id; onExerciseChange(); }
     if (!$('#view-settings').hidden) renderSettings();
+  });
+
+
+  $('#pf-basis').onchange = syncGoalLabel;
+  $('#profile-form').addEventListener('submit', ev => {
+    ev.preventDefault();
+    const basis = $('#pf-basis').value;
+    const goal = parseFloat($('#pf-goal').value);
+    const prof = {
+      sex: $('#pf-sex').value,
+      weightKg: parseFloat($('#pf-weight').value),
+      bodyFatPct: parseFloat($('#pf-fat').value),
+      smmKg: parseFloat($('#pf-smm').value) || null,
+      activity: parseFloat($('#pf-activity').value),
+      basis,
+      goalWeightKg: basis === 'weight' ? goal : null,
+      goalFatPct:   basis === 'fat'    ? goal : null,
+      weeks: parseInt($('#pf-weeks').value, 10)
+    };
+    if (!Number.isFinite(prof.weightKg) || !Number.isFinite(prof.bodyFatPct)
+        || !Number.isFinite(goal) || !Number.isFinite(prof.weeks)) return;
+    S.profile = prof; save(); renderPlan();
   });
 
   $('#btn-export').onclick = exportData;

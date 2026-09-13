@@ -46,6 +46,61 @@
     <button id="open-log" class="primary">＋ 운동 기록</button>
   </section>
 
+
+  <section id="view-plan" class="view" hidden>
+    <div id="plan-empty" class="card stack">
+      <h2 class="sec-title">아직 인바디 정보가 없습니다</h2>
+      <p class="note">체중과 체지방률만 있으면 하루 목표 칼로리와 탄단지가 계산됩니다. 아래에서 입력하세요.</p>
+    </div>
+
+    <div id="plan-today" class="card stack" hidden>
+      <h2 class="sec-title">오늘 <span class="hint" id="plan-goaltype"></span></h2>
+      <div class="budget">
+        <div><span class="b-num" id="b-target">0</span><span class="b-lab">목표</span></div>
+        <div><span class="b-num minus" id="b-eaten">0</span><span class="b-lab">먹음</span></div>
+        <div><span class="b-num plus" id="b-burn">0</span><span class="b-lab">운동 소모</span></div>
+        <div class="b-rest"><span class="b-num" id="b-left">0</span><span class="b-lab">남음</span></div>
+      </div>
+      <p class="note" id="burn-note"></p>
+      <div class="macro-row" id="macro-row"></div>
+    </div>
+
+    <div id="plan-advice" class="card stack" hidden>
+      <h2 class="sec-title">오늘 뭘 할까</h2>
+      <ul id="advice-list" class="list"></ul>
+    </div>
+
+    <details class="card" id="plan-detail" hidden>
+      <summary>계산 근거</summary>
+      <div class="stack" style="margin-top:.8rem">
+        <div class="kv" id="calc-kv"></div>
+        <p class="note">기초대사량은 Katch-McArdle 식(제지방량 기준), 소모 칼로리는 MET 추정입니다.
+           <b>전부 추정치이고 의학적 조언이 아닙니다.</b> 질환이 있거나 약을 드시는 중이면 전문가와 상의하세요.</p>
+      </div>
+    </details>
+
+    <form id="profile-form" class="card stack" autocomplete="off">
+      <h2 class="sec-title">내 몸 <span class="hint">인바디 수치</span></h2>
+      <div class="two">
+        <label>성별<select id="pf-sex"><option value="m">남</option><option value="f">여</option></select></label>
+        <label>체중 (kg)<input type="number" id="pf-weight" required min="25" max="300" step="0.1" inputmode="decimal"></label>
+      </div>
+      <div class="two">
+        <label>체지방률 (%)<input type="number" id="pf-fat" required min="3" max="60" step="0.1" inputmode="decimal"></label>
+        <label>골격근량 (kg) <span class="hint">선택</span><input type="number" id="pf-smm" min="10" max="80" step="0.1" inputmode="decimal"></label>
+      </div>
+      <label>활동 수준<select id="pf-activity"></select></label>
+
+      <h2 class="sec-title">목표</h2>
+      <div class="two">
+        <label>기준<select id="pf-basis"><option value="weight">목표 체중</option><option value="fat">목표 체지방률</option></select></label>
+        <label id="pf-goal-lab">목표 체중 (kg)<input type="number" id="pf-goal" required min="3" max="300" step="0.1" inputmode="decimal"></label>
+      </div>
+      <label>기간 (주)<input type="number" id="pf-weeks" required min="1" max="104" inputmode="numeric" placeholder="12"></label>
+      <button type="submit" class="primary">저장하고 계산</button>
+    </form>
+  </section>
+
   <section id="view-settings" class="view" hidden>
     <div class="card stack">
       <h2 class="sec-title">내 종목 <span class="hint" id="custom-count"></span></h2>
@@ -135,10 +190,12 @@
 <nav class="tabbar">
   <button data-view="today" class="on">오늘</button>
   <button data-view="workout">운동</button>
+  <button data-view="plan">목표</button>
   <button data-view="settings">설정</button>
 </nav>
 
 <script src="pose.js"></script>
+<script src="plan.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
